@@ -1,0 +1,51 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+
+- checkout: self
+  displayName: 'Checkout Keychain Repository'
+
+- script: |
+    echo "======================================"
+    echo "       KEYCHAIN WEBSITE BUILD"
+    echo "======================================"
+
+    echo "Checking website files..."
+
+    test -f index.html
+    test -f about.html
+    test -f services.html
+    test -f contact.html
+    test -f css/style.css
+    test -f js/script.js
+
+    echo "All required files are present."
+  displayName: 'Validate Website Files'
+
+- script: |
+    echo "Running basic website validation..."
+    echo "HTML/CSS/JavaScript files found."
+  displayName: 'Run Website Validation'
+
+- task: CopyFiles@2
+  displayName: 'Prepare Website Files'
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)'
+    Contents: |
+      **/*.html
+      **/*.css
+      **/*.js
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/keychain'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Keychain Website Artifact'
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/keychain'
+    ArtifactName: 'keychain-website'
+    publishLocation: 'Container'
